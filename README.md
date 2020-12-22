@@ -1,4 +1,9 @@
 # statvoxel
+
+UPDATE: movement in 3d works, see pic below...
+
+<img src=https://raw.githubusercontent.com/benrayfield/statvoxel/main/data/statvoxel/statvoxel_2020-12-22-3p_ScreenPixels512x512_mutableAftrans4x4.jpg>
+
 UPDATE: its now displaying 512x512 video as a test, but its still just random voxels, not mouse painting them in interesting combos yet.
 
 Each voxel has position in a cube of size 2^16 x 2^16 x 2^16 and 15 bit color, but can expand it to bigger spaces using pairs of longs later. Random voxels are now displayed. Experimenting with web of nodes each containing a long[] and java.util.function.LongToIntFunction where "each bucket contains at most 1 long. If it contains 0 longs, maybe just use the constant 0 to mean that? buckets[voxelToBucket.applyAsInt(voxel)] = voxel, for some voxel but one voxel can replace another voxel in the same bucket, depending on order they enter this node. Next one in overwrites the previous one in, or its 0.". Each Node has a sortVal to control which is read and written. (in theory...) All possible random interactions between any pair of nodes converges to exactly the same node states, as long as no 2 nodes have exactly the same sortVal,
