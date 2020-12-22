@@ -2,6 +2,7 @@ package statvoxel;
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.function.LongToIntFunction;
 
 /** functions that loop over a long[] and write into another long[]
 or into an int[] for the last calculation of generating the pixels,
@@ -99,11 +100,26 @@ public class Funcs{
 		return image2d_1024_1024_ARGB;
 	}
 	
-	public static long[] randVoxels(Random rand, int quantity){
+	/** returns a Node that always overwrites index 0 for any incoming voxel, since they have to go somewhere in it,
+	so it leaves the other longs as they are.
+	*/
+	public static Node wrap(String comment, long... array){
+		return new Node(comment, array, (long voxel)->0);
+	}
+	
+	public static Node wrap(long... array){
+		return new Node(array.length, (long voxel)->0);
+	}
+	
+	public static long strongrandVoxel(){
+		return Rand.strongRand.nextLong()|(1L<<63);
+	}
+	
+	public static Node randVoxels(Random rand, int quantity){
 		long[] voxels = new long[quantity];
 		//sign bit is alpha (nontransparent). 0 to delete/invisible. TODO, ignoring alpha for now 2020-12-22.
 		for(int i=0; i<quantity; i++) voxels[i] = rand.nextLong()|(1L<<63);
-		return voxels;
+		return wrap("startedAsRandVoxels"+quantity, voxels);
 	}
 	
 	public static long distanceSquared(long voxelA, long voxelB){
@@ -124,14 +140,25 @@ public class Funcs{
 	
 	public static void stream(Node from, Node to){
 		if(from.sortVal > to.sortVal){
-			for(long voxel : from.buckets) to.accept(voxel);
+			//slow: for(long voxel : from.buckets) to.accept(voxel); Do the same thing but faster below...
+			final long[] fromBuckets = from.buckets;
+			final long[] toBuckets = to.buckets;
+			final LongToIntFunction bucketChooser = to.voxelToBucket;
+			for(int i=0; i<fromBuckets.length; i++){
+				long voxel = fromBuckets[i];
+				toBuckets[bucketChooser.applyAsInt(voxel)] = voxel;
+			}
 		}
 	}
 	
 	public static Node screenPixels512x512_wrapXAndYIntoThatIgnoringZ(){
-		return new Node(512*512, (long voxel)->{
+		return new Node("screenPixels512x512_wrapXAndYIntoThatIgnoringZ", 512*512, (long voxel)->{
 			return ((y(voxel)&511)<<9)|(x(voxel)&511);
 		});
+	}
+	
+	public static String toString(long voxel){
+		return "("+z(voxel)+" "+y(voxel)+" "+x(voxel)+" #"+colorARGB(voxel)+")";
 	}
 	
 	/*public static Node circle(int buckets, long voxelAtCenter, float radius){

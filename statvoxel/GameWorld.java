@@ -12,6 +12,7 @@ public class GameWorld{
 	public Set<Node> nodesSet = new HashSet();
 	
 	public Node randomNode(){
+		if(nodesSet.isEmpty()) add(Funcs.randVoxels(Rand.weakRand, 5)); //FIXME this is just here so you see something instead of thinking its broken
 		List<Node> nodes = sortedNodes();
 		return nodes.get(Rand.strongRand.nextInt(nodes.size()));
 	}
@@ -43,13 +44,13 @@ public class GameWorld{
 	
 	/** puts at the reader end, so it reads from all other Nodes, and no Node reads from it (instead of somewhere in middle) */
 	public void becomeReader(Node n){
-		n.sortVal = minSortVal()-1;
+		if(!nodesSet.isEmpty()) n.sortVal = minSortVal()-1;
 		nodesSet.add(n);
 	}
 	
 	/** puts at the writer end, so it writes to all other Nodes, and no Node writes to it (instead of somewhere in middle) */
 	public void becomeWriter(Node n){
-		n.sortVal = maxSortVal()-1;
+		if(!nodesSet.isEmpty()) n.sortVal = maxSortVal()+1;
 		nodesSet.add(n);
 	}
 	

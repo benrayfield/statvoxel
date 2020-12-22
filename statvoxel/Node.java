@@ -67,8 +67,12 @@ public class Node implements LongConsumer/*, LongSupplier would maybe need a Ran
 	}
 	
 	public Node(String comment, int buckets, LongToIntFunction voxelToBucket){
+		this(comment, new long[buckets], voxelToBucket);
+	}
+	
+	public Node(String comment, long[] buckets, LongToIntFunction voxelToBucket){
 		this.comment = comment;
-		this.buckets = new long[buckets];
+		this.buckets = buckets;
 		this.voxelToBucket = voxelToBucket;
 	}
 	

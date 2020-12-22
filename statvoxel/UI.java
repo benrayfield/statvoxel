@@ -40,11 +40,13 @@ public class UI extends JPanel{
 		TODO
 	});*/
 	
-	public UI(){
+	/*public UI(){
 		this(null,0);
-	}
+	}*/
 	
 	public UI(Node interactiveVideo, int interactiveVideoWidth){
+		this.interactiveVideo = interactiveVideo;
+		this.interactiveVideoWidth = interactiveVideoWidth;
 		setMinimumSize(new Dimension(100,100));
 		setPreferredSize(new Dimension(1000,1000));
 		setMaximumSize(new Dimension(10000,10000));
@@ -53,6 +55,7 @@ public class UI extends JPanel{
 			public void mouseMoved(MouseEvent e){
 				controls['X'] = e.getX();
 				controls['Y'] = e.getY();
+				onUIEvent();
 			}
 			public void mouseDragged(MouseEvent e){
 				mouseMoved(e);
@@ -61,20 +64,25 @@ public class UI extends JPanel{
 		addMouseWheelListener(new MouseWheelListener(){
 			public void mouseWheelMoved(MouseWheelEvent e){
 				controls['O'] += e.getClickCount(); //FIXME this needs statistical norming. get that code from listweb, and maybe decay it toward 0.
+				onUIEvent();
 			}
 		});
 		addMouseListener(new MouseListener(){
 			public void mouseReleased(MouseEvent e){
 				controls[e.getButton()] = 0;
+				onUIEvent();
 			}
 			public void mousePressed(MouseEvent e){
 				controls[e.getButton()] = 1;
+				onUIEvent();
 			}
 			public void mouseExited(MouseEvent e){
 				controls['M'] = 0; //0 when mouse is in this component, cuz all controls being 0 should be a working state
+				onUIEvent();
 			}
 			public void mouseEntered(MouseEvent e){
 				controls['M'] = 1;
+				onUIEvent();
 			}
 			public void mouseClicked(MouseEvent e){}
 		});
@@ -82,23 +90,31 @@ public class UI extends JPanel{
 			public void keyTyped(KeyEvent e){}
 			public void keyReleased(KeyEvent e){
 				controls[e.getKeyCode()&0x7f] = 0;
+				onUIEvent();
 			}
 			public void keyPressed(KeyEvent e){
 				controls[e.getKeyCode()&0x7f] = 1;
+				onUIEvent();
 			}
 		});
 		addFocusListener(new FocusListener(){
 			public void focusLost(FocusEvent e){
 				controls['F'] = 1;
+				onUIEvent();
 			}
 			public void focusGained(FocusEvent e){
 				controls['F'] = 0; //0 when this component has focus, cuz all controls being 0 should be a working state
+				onUIEvent();
 			}
 		});
 		resetControls();
-		if(interactiveVideo != null){ //FIXME this is just during transition from int[] to long[] for screen pixels.
-			setPixels(interactiveVideo, interactiveVideoWidth);
-		}
+		/*if(interactiveVideo != null){ //FIXME this is just during transition from int[] to long[] for screen pixels.
+			setPixels(interactiveVideo, interactiveVideoWidth,true);
+		}*/
+	}
+	
+	protected void onUIEvent(){
+		repaint(); //waits until all ui events have finished so doesnt repeat multiple times at once
 	}
 	
 	protected void resetControls(){
@@ -119,7 +135,7 @@ public class UI extends JPanel{
 	/** image.buckets[y*width+x] is voxel to display at that x and y. It only has 15 bits of color, near the high end.
 	Copy its color to the BufferedImage, for each 2d pixel. Repaint().
 	*/
-	public void setPixels(Node image, int width){
+	public void setPixels(Node image, int width, boolean repaint){
 		long[] voxels = image.buckets;
 		int height = voxels.length/width;
 		if(width*height != voxels.length) throw new RuntimeException("Doesnt divide evenly");
@@ -133,7 +149,7 @@ public class UI extends JPanel{
 				img.setRGB(x, y, colorARGB);
 			}
 		}
-		repaint();
+		if(repaint) repaint();
 	}
 	
 	/** This works (as of 2020-12-22-1240p), but you should probably use setPixels(Node,int) instead */
@@ -177,6 +193,7 @@ public class UI extends JPanel{
 	}
 	
 	public void paint(Graphics g){
+		setPixels(interactiveVideo, interactiveVideoWidth, false); //copy interactiveVideo to BufferedImage img
 		ScreenUtil.paintOGIYXHW(this, g, img, 0, 0, getHeight(), getWidth());
 		//g.setColor(Color.blue);
 		//g.drawLine(0, 0, getWidth(), getHeight());
