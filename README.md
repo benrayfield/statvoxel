@@ -1,5 +1,5 @@
 # statvoxel
-"things far away occur less often but are the same size as things near" and less directly relevant to this project "I have tamed the beast of lambda so it will no longer bite us with halting problem though mathematically it is still possible of a vanishingly small chance, it is now friendlier than a cat"
+"things far away occur less often but are the same size as things near" and less directly relevant to this project "I have tamed the beast of lambda so it will no longer bite us with halting problem though mathematically it is still possible of a vanishingly small chance, it is now friendlier than a cat". So please, advocates of procedural programming, do not be afraid of lambda anymore, maybe we can gradually learn to make more use of it.
 
 The goal of this project is to randomly select from near voxels, by a chosen nonlinear function (such as linear or squared), to display a small near subset of 1 gigavoxel per video frame per computer, potentially in a space of many more voxels from distant/multiplayer sources but want to get it working on 1 computer first.
 
