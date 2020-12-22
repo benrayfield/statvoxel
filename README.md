@@ -1,6 +1,6 @@
 # statvoxel
 
-UPDATE: movement in 3d works, see pic below...
+UPDATE: movement in 3d works, see pic below... (and very small: 43kB not including the screenshot below. Doing this for a massively multiplayer game world should be only slightly bigger)
 
 <img src=https://raw.githubusercontent.com/benrayfield/statvoxel/main/data/statvoxel/statvoxel_2020-12-22-3p_ScreenPixels512x512_mutableAftrans4x4.jpg>
 
