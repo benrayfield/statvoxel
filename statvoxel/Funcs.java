@@ -28,6 +28,10 @@ public class Funcs{
 		return ((y(voxel)&1023)<<10)|(x(voxel)&1023);
 	}
 	
+	public static short color16(long voxel){
+		return (short)(voxel>>>48);
+	}
+	
 	public static int colorARGB(long voxel){
 		//the high 16 bits contain color. Its highest bit, maybe leave that for possible transparency/erasing things later.
 		//5 bits for each of red green blue.
@@ -129,6 +133,28 @@ public class Funcs{
 		return dx*dx + dy*dy + dz*dz;
 	}
 	
+	public static long voxel(short color, short z, short y, short x){
+		return ((((long)color)<<48)&0xffff000000000000L)
+			| ((((long)z)<<32)&0xffff00000000L)
+			| ((((long)y)<<16)&0xffff0000L)
+			| ((((long)x))&0xffffL);
+	}
+	
+	public static short ave(short a, short b){
+		return (short)((a+b)>>1);
+	}
+	
+	public static long midpoint(long voxelA, long voxelB){
+		//FIXME each uint5 of red green and blue has to be averaged separately,
+		//so for now lets just use the color of voxelA
+		return voxel(color16(voxelA), ave(z(voxelA),z(voxelB)), ave(y(voxelA),y(voxelB)), ave(x(voxelA),x(voxelB)));
+		
+		//TODO try this optimization
+		//long mask = 0x8001000100010001L; //select the lowest bit of color, z, y, and x, and the highest bit aka alpha
+		//return ((voxelA&(~mask))>>1)+((voxelB&(~mask))>>1);
+		
+	}
+	
 	/*public static void sortByDistanceTo(long[] voxels, long here){
 		Arrays.sort(voxels, c);
 		Arrays.sort((Long[])voxels, (long a, long b)->{
@@ -156,6 +182,57 @@ public class Funcs{
 			return ((y(voxel)&511)<<9)|(x(voxel)&511);
 		});
 	}
+	
+	public static class ScreenPixels512x512_mutableAftrans4x4 extends Node{
+		public final float[][] aftrans;
+		
+		//TODO try this optimization (but for now just do float[4][4] and start moving around in the 3d world).
+		//color must be 0. Does 3 multiplies at a time.
+		//BUT fixme must be adjusted to use uint16 in those 3 ranges as signed int16,
+		//public long aftransX, aftransY, aftransZ, aftransMove;
+		
+		public static final int Z = 3, Y = 2, X = 1, MOVE = 0;
+		
+		public ScreenPixels512x512_mutableAftrans4x4(){
+			super("ScreenPixels512x512_mutableAftrans4x4", 512*512, null);
+			aftrans = new float[4][4];
+			aftrans[0][0] = aftrans[1][1] = aftrans[2][2] = aftrans[3][3] = 1;
+			this.voxelToBucket = (long voxel)->{
+				int z = z(voxel), y = y(voxel), x = x(voxel);
+				int bucketY = (int)(aftrans[Z][Y]*z+aftrans[Y][Y]*y+aftrans[X][Y]*x+aftrans[MOVE][Y]); //FIXME
+				int bucketX = (int)(aftrans[Z][X]*z+aftrans[Y][X]*y+aftrans[X][X]*x+aftrans[MOVE][X]); //FIXME
+				bucketY = Math.max(0, Math.min(bucketY, 511));
+				bucketX = Math.max(0, Math.min(bucketX, 511));
+				return ((bucketY<<9)|bucketX);
+			};
+		}
+	}
+	
+	/** maps voxels into buckets (like a long[512][512] image) based on [4][4] affine transform
+	like normally used in 3d games. The fourth dimension is used for position offset.
+	This affine transform is mutable so will accumulate voxels gradually and continue displaying
+	what was in the last video frame until a voxel comes to replace it at same x and y.
+	*
+	public static Node screenPixels512x512_mutableAftrans4x4(){
+		
+		
+		/*return new Node("screenPixels512x512_mutableAftrans4x4", 512*512, (long voxel)->{
+			return this.Node.aftrans.length;
+			//return 345; //FIXME
+			//return ((y(voxel)&511)<<9)|(x(voxel)&511);
+		}){
+			public final float[][] aftrans = new float[4][4];
+			{ this.aftrans[0][0] = this.aftrans[1][1] = this.aftrans[2][2] = this.aftrans[3][3] = 1; }
+		};*
+		
+		/*return new Node("screenPixels512x512_mutableAftrans4x4", 512*512, (long voxel)->{
+			return 345; //FIXME
+			//return ((y(voxel)&511)<<9)|(x(voxel)&511);
+		}){
+			public final float[][] aftrans = new float[4][4];
+			{ this.aftrans[0][0] = this.aftrans[1][1] = this.aftrans[2][2] = this.aftrans[3][3] = 1; }
+		};*
+	}*/
 	
 	public static String toString(long voxel){
 		return "("+z(voxel)+" "+y(voxel)+" "+x(voxel)+" #"+colorARGB(voxel)+")";

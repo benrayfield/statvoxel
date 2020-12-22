@@ -46,7 +46,8 @@ public class Node implements LongConsumer/*, LongSupplier would maybe need a Ran
 	public int gasIn, gasOut;
 	*/
 	
-	public final LongToIntFunction voxelToBucket;
+	/** allow it to be replaced, normally once in constructor of subclass that needs to refer to its instance vars. */
+	public LongToIntFunction voxelToBucket;
 	
 	/** each bucket contains at most 1 long. If it contains 0 longs, maybe just use the constant 0 to mean that?
 	buckets[voxelToBucket.applyAsInt(voxel)] = voxel, for some voxel but one voxel can replace another voxel

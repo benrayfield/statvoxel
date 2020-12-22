@@ -9,7 +9,8 @@ public class Start{
 		Random r = Rand.weakRand;
 		GameWorld world = new GameWorld();
 		
-		Node vox = randVoxels(r, 50000);
+		//Node vox = randVoxels(r, 50000);
+		Node vox = randVoxels(r, 500);
 		
 		
 		//changes to interactiveVideo display in UI after UI.repaint()
@@ -18,12 +19,21 @@ public class Start{
 		Arrays.fill(interactiveVideo.buckets, startBackgroundAs);
 		UI ui = new UI(interactiveVideo, 512);
 		
+		ScreenPixels512x512_mutableAftrans4x4 display3d = new ScreenPixels512x512_mutableAftrans4x4();
+		display3d.aftrans[3][3] = display3d.aftrans[2][2] = display3d.aftrans[1][1] = .01f;
+		UI ui2 = new UI(display3d, 512);
+		
 		ScreenUtil.testDisplayWithExitOnClose(ui);
+		ScreenUtil.testDisplayWithExitOnClose(ui2);
 		
 		world.add(vox);
 		world.add(interactiveVideo);
 		
+		//TODO world.add(ui.controls); but FIXME controls isnt a Node yet, its just a long[] in UI
+		//and isnt limiting the values to just changing color15 (changes the low 48 bits which it shouldnt)
+		
 		world.becomeWriter(vox);
+		world.becomeReader(display3d);
 		
 		stream(vox, interactiveVideo);
 		
@@ -39,7 +49,18 @@ public class Start{
 		
 		while(true){
 			
-			for(int i=0; i<10000; i++) interactiveVideo.accept(strongrandVoxel());
+			//for(int i=0; i<10000; i++) interactiveVideo.accept(strongrandVoxel());
+			long a = world.findRandomVoxel(Rand.strongRand);
+			long b = world.findRandomVoxel(Rand.strongRand);
+			//interactiveVideo.accept(midpoint(a, b));
+			interactiveVideo.accept(midpoint(midpoint(midpoint(a,b),a),a));
+			
+			for(int j=0; j<4; j++){
+				for(int k=0; k<4; k++){
+					//move/bend randomly the aftrans 3d view a little each video frame, just to see it rotating etc.
+					display3d.aftrans[j][k] += (float)(Rand.strongRand.nextGaussian()*.00001);
+				}
+			}
 			
 			world.nextState();
 			
